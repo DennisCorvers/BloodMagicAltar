@@ -6,9 +6,10 @@ namespace BloodMagicCalculator
 {
     internal class Altar
     {
-        private const int CycleTime = 25;
+        public const int CycleTime = 25;
 
         // Base values
+        private readonly int m_altarTier;
         private readonly int m_baseCapacity;
         private readonly int m_baseCraftingRate;
         private readonly int m_baseLPGeneration;
@@ -113,6 +114,7 @@ namespace BloodMagicCalculator
 
         public Altar(int altarTier, int capacity = 10000, int craftingRate = 20, int lpPerCycle = 2500, int reservedRunes = 0)
         {
+            m_altarTier = altarTier;
             m_baseCapacity = capacity;
             m_baseCraftingRate = craftingRate;
             m_baseLPGeneration = lpPerCycle;
@@ -174,6 +176,22 @@ namespace BloodMagicCalculator
             m_totalRunesUsed -= m_runes.Values.Sum();
             m_runes.Clear();
             m_statCache = null;
+        }
+
+        public Altar Copy()
+        {
+            var copy = new Altar(m_altarTier, m_baseCapacity, m_baseCraftingRate, m_baseLPGeneration, ReservedRunes);
+
+            foreach (var kvp in m_runes)
+                copy.m_runes[kvp.Key] = kvp.Value;
+
+            copy.m_totalRunesUsed = m_totalRunesUsed;
+            copy.m_orb = m_orb;
+            copy.m_acceleratorTier = m_acceleratorTier;
+            copy.m_acceleration = m_acceleration;
+            copy.m_statCache = null;
+
+            return copy;
         }
 
         private static int GetMaxRuneCount(int altarTier)

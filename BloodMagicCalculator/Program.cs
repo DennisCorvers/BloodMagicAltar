@@ -1,4 +1,5 @@
-﻿using BloodMagicCalculator.Runes;
+﻿using BloodMagicCalculator.Calc;
+using BloodMagicCalculator.Runes;
 
 namespace BloodMagicCalculator
 {
@@ -6,23 +7,25 @@ namespace BloodMagicCalculator
     {
         static void Main(string[] args)
         {
-            var selfSacrifice = new Runes.SelfSacrifice();
-            var speed = new Runes.Speed();
-            var capacity = new Runes.AugmentedCapacity();
-            var supCapacity = new Runes.SuperiorCapacity();
-            var orbRune = new Runes.Orb();
+            CalcOptimum();
+        }
 
-            var orb = new BloodOrb("Apprentice Blood Orb", 5, 25000);
+        static void CalcOptimum()
+        {
+            var possibleRunes = new List<BaseRune>()
+            {
+                new Runes.AugmentedCapacity(),
+                new Runes.Orb(),
+                new Runes.Sacrifice(),
+                new Runes.Speed(),
+                new Runes.SuperiorCapacity(),
+            };
 
+            var orb = new BloodOrb("Apprentice Blood Orb", 140, 80000000);
             var altar = new Altar(6);
 
-            altar.AddRune(selfSacrifice, 10);
-            altar.AddRune(speed, 10);
-            altar.AddRune(capacity, 10);
-            altar.AddRune(supCapacity, 10);
-            altar.AddRune(orbRune, 37);
-
-            altar.AddOrb(orb);
+            var calculator = new RuneCalculator(possibleRunes);
+            var result = calculator.OptimiseOrbChargeRate(altar, orb);
         }
     }
 }
