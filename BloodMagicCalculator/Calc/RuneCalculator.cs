@@ -20,19 +20,41 @@ namespace BloodMagicCalculator.Calc
 
         public Altar OptimiseOrbChargeRate(Altar baseAltar, IBloodOrb orb, int networkCapacity = 0, bool preventDryAltar = false)
         {
-            Altar working = baseAltar.Copy();
-            working.AddOrb(orb);
-            if (networkCapacity > orb.Capacity)
-                ApplyNetworkCapacityRunes(working, orb, networkCapacity);
+            Func<Altar, double> scoreFunc = (altar) =>
+            {
+                double lpPerCycle = Math.Min(altar.LPPerCycle, altar.Capacity);
+                double bloodPerTick = lpPerCycle / Altar.CycleTime;
+                double orbChargeSpeed = Math.Min(bloodPerTick, altar.OrbChargeSpeed);
 
-            int maxSlots = working.MaxRuneSlots - working.TotalRunesUsed;
-            int runeTypes = m_runes.Count;
+                if (preventDryAltar && bloodPerTick < altar.OrbChargeSpeed)
+                    return double.MinValue;
+
+                return orbChargeSpeed;
+            };
+
+            return OptimiseAltar(baseAltar, orb, scoreFunc, networkCapacity);
+        }
+
+        private Altar OptimiseAltar(Altar baseAltar, IBloodOrb orb, Func<Altar, double> scoreFunc, int networkCapacity = 0)
+        {
+            var working = baseAltar.Copy();
+            working.AddOrb(orb);
+
+            // If requested blood network capacity is larger tha the orb,
+            // add Orb Runes until the target it met.
+            if (networkCapacity > orb.Capacity)
+            {
+                ApplyNetworkCapacityRunes(working, orb, networkCapacity);
+            }
+
+            var maxSlots = working.MaxRuneSlots - working.TotalRunesUsed;
+            var runeTypes = m_runes.Count;
 
             if (maxSlots == 0)
                 return working;
 
-            double bestRate = 0;
-            Altar bestAltar = working.Copy();
+            var bestScore = double.MinValue;
+            var bestAltar = working.Copy();
 
             var combinations = new List<int[]>();
             GenerateCombinations(maxSlots, 0, runeTypes, new int[runeTypes], combinations);
@@ -48,16 +70,12 @@ namespace BloodMagicCalculator.Calc
 
                 testAltar.AddOrb(orb);
 
-                double lpPerCycle = Math.Min(testAltar.LPPerCycle, testAltar.Capacity);
-                double bloodPerTick = lpPerCycle / Altar.CycleTime;
-                double orbRate = Math.Min(bloodPerTick, testAltar.OrbChargeSpeed);
+                // Test/Score the altar setup
+                var score = scoreFunc(testAltar);
 
-                if (preventDryAltar && bloodPerTick < testAltar.OrbChargeSpeed)
-                    continue;
-
-                if (orbRate > bestRate)
+                if (score > bestScore)
                 {
-                    bestRate = orbRate;
+                    bestScore = score;
                     bestAltar = testAltar.Copy();
                 }
             }
