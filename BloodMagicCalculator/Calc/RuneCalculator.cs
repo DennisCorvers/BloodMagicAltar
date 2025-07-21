@@ -1,4 +1,5 @@
-﻿using BloodMagicCalculator.Runes;
+﻿using BloodMagicCalculator.Data;
+using BloodMagicCalculator.Runes;
 
 namespace BloodMagicCalculator.Calc
 {
@@ -6,9 +7,16 @@ namespace BloodMagicCalculator.Calc
     {
         private readonly IReadOnlyList<BaseRune> m_runes;
 
-        public RuneCalculator(IReadOnlyList<BaseRune> targetRunes)
+        public RuneCalculator()
         {
-            m_runes = targetRunes;
+            m_runes = new List<BaseRune>()
+            {
+                new Runes.AugmentedCapacity(),
+                new Runes.Orb(),
+                new Runes.Sacrifice(),
+                new Runes.Speed(),
+                new Runes.SuperiorCapacity(),
+            };
         }
 
         public Altar OptimiseOrbChargeRate(Altar baseAltar, IBloodOrb orb, int networkCapacity = 0, bool preventDryAltar = false)

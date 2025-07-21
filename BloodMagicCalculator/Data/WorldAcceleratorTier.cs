@@ -1,4 +1,4 @@
-﻿namespace BloodMagicCalculator
+﻿namespace BloodMagicCalculator.Data
 {
     internal enum WorldAcceleratorTier
     {

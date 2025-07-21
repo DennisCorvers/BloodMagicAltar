@@ -1,4 +1,5 @@
 ﻿using BloodMagicCalculator.Calc;
+using BloodMagicCalculator.Data;
 using BloodMagicCalculator.Runes;
 using System.Collections.ObjectModel;
 
@@ -121,11 +122,11 @@ namespace BloodMagicCalculator
 
         public IBloodOrb? Orb => m_orb;
 
-        public Altar(int altarTier, int capacity = 10000, int craftingRate = 20, int lpPerCycle = 2500, int reservedRunes = 0)
+        public Altar(int altarTier, int capacity = 10000, int baseCraftingRate = 20, int lpPerCycle = 2500, int reservedRunes = 0)
         {
             m_altarTier = altarTier;
             m_baseCapacity = capacity;
-            m_baseCraftingRate = craftingRate;
+            m_baseCraftingRate = baseCraftingRate;
             m_baseLPGeneration = lpPerCycle;
             MaxRuneSlots = GetMaxRuneCount(altarTier);
 
