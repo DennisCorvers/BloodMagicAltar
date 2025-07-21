@@ -22,11 +22,11 @@ namespace BloodMagicCalculator
                 new Runes.SuperiorCapacity(),
             };
 
-            var orb = Data.Data.GetOrb(OrbType.ApprenticeBloodOrb);
+            var orb = Data.Data.GetOrb(OrbType.WeakBloodOrb);
             var altar = new Altar(6);
 
             var calculator = new RuneCalculator(runesToCheck);
-            var result = calculator.OptimiseOrbChargeRate(altar, orb, 125000000);
+            var result = calculator.OptimiseOrbChargeRate(altar, orb);
 
             ShowResults(result);
         }
@@ -47,7 +47,7 @@ namespace BloodMagicCalculator
             Console.WriteLine($"{"LP PerTick",-20}: {result.LPPerTick:N0}LP/t");
             Console.WriteLine();
             Console.WriteLine($"{"Orb Capacity",-20}: {result.OrbCapacity:N0}LP");
-            Console.WriteLine($"{"Orb Charge Speed",-20}: {result.OrbChargeSpeed:N0}LP");
+            Console.WriteLine($"{"Orb Charge Speed",-20}: {result.OrbChargeSpeed:N0}LP/t");
 
             Console.WriteLine();
             Console.WriteLine("Rune Configuration:");
