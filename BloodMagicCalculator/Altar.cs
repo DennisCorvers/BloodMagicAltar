@@ -14,10 +14,11 @@ namespace BloodMagicCalculator
         private readonly int m_baseCraftingRate;
         private readonly int m_baseLPGeneration;
         private readonly Dictionary<BaseRune, int> m_runes;
+
         private int m_reservedrunes = 0;
         private int m_totalRunesUsed = 0;
-        private WorldAcceleratorTier m_acceleratorTier;
-        private int m_acceleration;
+        private int m_altarAcceleration = 1;
+        private int m_ritualAcceleration = 1;
         private AltarContext? m_statCache = null;
         private IBloodOrb? m_orb = null;
 
@@ -30,18 +31,6 @@ namespace BloodMagicCalculator
         public int TotalRunesUsed
         { get => m_totalRunesUsed; }
 
-        public WorldAcceleratorTier WorldAccelerator
-        {
-            get
-            {
-                return m_acceleratorTier;
-            }
-            set
-            {
-                m_acceleratorTier = value;
-                m_acceleration = value.GetMultiplier();
-            }
-        }
         public AltarContext AltarStats
         {
             get
@@ -59,6 +48,10 @@ namespace BloodMagicCalculator
         }
         public IReadOnlyDictionary<BaseRune, int> Runes
             => m_runes;
+
+        public int AltarAcceleration => m_altarAcceleration;
+
+        public int RitualAcceleration => m_ritualAcceleration;
 
         /// <summary>
         /// Total capacity of the altar
@@ -84,7 +77,11 @@ namespace BloodMagicCalculator
         /// </summary>
         public int CraftingLP
         {
-            get => (int)Math.Floor(m_baseCraftingRate * AltarStats.CraftingSpeed);
+            get
+            {
+                var baseRate = (int)Math.Floor(m_baseCraftingRate * AltarStats.CraftingSpeed);
+                return baseRate * m_altarAcceleration;
+            }
         }
 
         /// <summary>
@@ -92,17 +89,27 @@ namespace BloodMagicCalculator
         /// </summary>
         public int LPPerCycle
         {
-            get => (int)Math.Floor(m_baseLPGeneration * AltarStats.SacrificeMultiplier) * m_acceleration;
+            get
+            {
+                var baseLP = (int)Math.Floor(m_baseLPGeneration * AltarStats.SacrificeMultiplier);
+                return baseLP * m_ritualAcceleration;
+            }
         }
 
         public int LPPerTick
             => LPPerCycle / CycleTime;
 
+        /// <summary>
+        /// Also mandates crafting speed
+        /// </summary>
         public int OrbChargeSpeed
         {
-            get => m_orb == null
-                ? 0
-                : (int)Math.Floor(m_orb.ChargeSpeed * AltarStats.CraftingSpeed);
+            get
+            {
+                if (m_orb == null) return 0;
+                var baseRate = (int)Math.Floor(m_orb.ChargeSpeed * AltarStats.CraftingSpeed);
+                return baseRate * m_altarAcceleration;
+            }
         }
 
         public int OrbCapacity
@@ -125,8 +132,20 @@ namespace BloodMagicCalculator
             ReservedRunes = reservedRunes;
             m_totalRunesUsed = ReservedRunes;
             m_runes = new Dictionary<BaseRune, int>(MaxRuneSlots);
-            m_acceleratorTier = WorldAcceleratorTier.None;
-            m_acceleration = 1;
+            m_altarAcceleration = 1;
+            m_ritualAcceleration = 1;
+        }
+
+        public void AddWorldAccelerator(WorldAcceleratorTier wa, WorldAcceleratorTarget target)
+        {
+            if (target == WorldAcceleratorTarget.Ritual)
+            {
+                m_ritualAcceleration = 1 + wa.GetMultiplier();
+            }
+            else
+            {
+                m_altarAcceleration = 1 + wa.GetMultiplier();
+            }
         }
 
         public void AddOrb(IBloodOrb orb)
@@ -189,8 +208,8 @@ namespace BloodMagicCalculator
 
             copy.m_totalRunesUsed = m_totalRunesUsed;
             copy.m_orb = m_orb;
-            copy.m_acceleratorTier = m_acceleratorTier;
-            copy.m_acceleration = m_acceleration;
+            copy.m_ritualAcceleration = m_ritualAcceleration;
+            copy.m_altarAcceleration = m_altarAcceleration;
             copy.m_statCache = null;
 
             return copy;

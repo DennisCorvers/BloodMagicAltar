@@ -24,9 +24,11 @@ namespace BloodMagicCalculator
 
             var orb = Data.Data.GetOrb(OrbType.EldritchBloodOrb);
             var altar = new Altar(6);
+            altar.AddWorldAccelerator(WorldAcceleratorTier.HV, WorldAcceleratorTarget.Ritual);
+            altar.AddWorldAccelerator(WorldAcceleratorTier.HV, WorldAcceleratorTarget.Altar);
 
             var calculator = new RuneCalculator(runesToCheck);
-            var result = calculator.OptimiseOrbChargeRate(altar, orb);
+            var result = calculator.OptimiseOrbChargeRate(altar, orb, 125000000);
 
             ShowResults(result);
         }
@@ -41,7 +43,6 @@ namespace BloodMagicCalculator
 
             Console.WriteLine($"{"Capacity",-20}: {result.Capacity:N0}LP");
             Console.WriteLine($"{"I/O Buffer Capacity",-20}: {result.IOCapacity:N0}LP");
-            Console.WriteLine($"{"LP Usage",-20}: {result.CraftingLP:N0}LP/t");
             Console.WriteLine();
             Console.WriteLine($"{"LP Per Cycle",-20}: {result.LPPerCycle:N0}LP");
             Console.WriteLine($"{"LP PerTick",-20}: {result.LPPerTick:N0}LP/t");
@@ -56,7 +57,9 @@ namespace BloodMagicCalculator
 
             Console.WriteLine();
             Console.WriteLine($"{"Total Runes Used",-20}: {result.TotalRunesUsed}");
-            Console.WriteLine($"{"World Accelerator",-20}: {result.WorldAccelerator}");
+
+            Console.WriteLine($"{"Altar Acceleration",-20}: {result.AltarAcceleration}");
+            Console.WriteLine($"{"Ritual Acceleration",-20}: {result.RitualAcceleration}");
         }
     }
 }

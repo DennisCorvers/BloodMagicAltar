@@ -5,6 +5,11 @@
         None, LV, MV, HV, EV, IV, LuV, ZPM
     }
 
+    internal enum WorldAcceleratorTarget
+    {
+        Altar, Ritual
+    }
+
     internal static class WorldAcceleratorTierExtensions
     {
         private static readonly Dictionary<WorldAcceleratorTier, int> Multipliers = new()
