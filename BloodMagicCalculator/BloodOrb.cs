@@ -2,6 +2,7 @@
 {
     internal interface IBloodOrb
     {
+        string Name { get; }
         int ChargeSpeed { get; }
         int Capacity { get; }
     }

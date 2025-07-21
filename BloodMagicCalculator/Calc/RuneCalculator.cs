@@ -36,7 +36,7 @@ namespace BloodMagicCalculator.Calc
 
             double bestRate = EvaluateRuneSetup(baseAltar, orb, currentCounts, out Altar bestAltar);
             bool improved = true;
-            int maxIterations = 10000; // limit for safety
+            int maxIterations = 100000; // limit for safety
 
             while (improved && maxIterations-- > 0)
             {

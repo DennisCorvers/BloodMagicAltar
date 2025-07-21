@@ -112,6 +112,8 @@ namespace BloodMagicCalculator
                 : (int)Math.Floor(m_orb.Capacity * AltarStats.SoulNetworkMultiplier);
         }
 
+        public IBloodOrb? Orb => m_orb;
+
         public Altar(int altarTier, int capacity = 10000, int craftingRate = 20, int lpPerCycle = 2500, int reservedRunes = 0)
         {
             m_altarTier = altarTier;
