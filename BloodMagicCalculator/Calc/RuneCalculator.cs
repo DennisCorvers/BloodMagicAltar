@@ -12,7 +12,6 @@ namespace BloodMagicCalculator.Calc
             m_runes = new List<BaseRune>()
             {
                 new Runes.AugmentedCapacity(),
-                new Runes.Orb(),
                 new Runes.Sacrifice(),
                 new Runes.Speed(),
                 new Runes.SuperiorCapacity(),
@@ -21,7 +20,6 @@ namespace BloodMagicCalculator.Calc
 
         public Altar OptimiseOrbChargeRate(Altar baseAltar, IBloodOrb orb, int networkCapacity = 0, bool preventDryAltar = false)
         {
-            // 1) Handle network capacity setup
             Altar working = baseAltar.Copy();
             working.AddOrb(orb);
             if (networkCapacity > orb.Capacity)
@@ -36,70 +34,59 @@ namespace BloodMagicCalculator.Calc
             double bestRate = 0;
             Altar bestAltar = working.Copy();
 
-            // 2) Try every 5-tuple (rune counts summing to maxSlots)
-            for (int n0 = 0; n0 <= maxSlots; n0++)
+            var combinations = new List<int[]>();
+            GenerateCombinations(maxSlots, 0, runeTypes, new int[runeTypes], combinations);
+
+            foreach (var counts in combinations)
             {
-                for (int n1 = 0; n1 <= maxSlots - n0; n1++)
+                var testAltar = working.Copy();
+                for (int i = 0; i < runeTypes; i++)
                 {
-                    for (int n2 = 0; n2 <= maxSlots - n0 - n1; n2++)
-                    {
-                        for (int n3 = 0; n3 <= maxSlots - n0 - n1 - n2; n3++)
-                        {
-                            int n4 = maxSlots - n0 - n1 - n2 - n3;
-                            int[] counts = new[] { n0, n1, n2, n3, n4 };
+                    if (counts[i] > 0)
+                        testAltar.AddRune(m_runes[i], counts[i]);
+                }
 
-                            // Build full altar
-                            var testAltar = working.Copy();
-                            for (int i = 0; i < runeTypes; i++)
-                                if (counts[i] > 0)
-                                    testAltar.AddRune(m_runes[i], counts[i]);
+                testAltar.AddOrb(orb);
 
-                            // Add orb again (if not already applied inside AddRune logic)
-                            testAltar.AddOrb(orb);
+                double lpPerCycle = Math.Min(testAltar.LPPerCycle, testAltar.Capacity);
+                double bloodPerTick = lpPerCycle / Altar.CycleTime;
+                double orbRate = Math.Min(bloodPerTick, testAltar.OrbChargeSpeed);
 
-                            // Score based on fully derived stats
-                            double lpPerCycle = Math.Min(testAltar.LPPerCycle, testAltar.Capacity);
-                            double bloodPerTick = lpPerCycle / Altar.CycleTime;
-                            double orbRate = Math.Min(bloodPerTick, testAltar.OrbChargeSpeed);
+                if (preventDryAltar && bloodPerTick < testAltar.OrbChargeSpeed)
+                    continue;
 
-                            if (preventDryAltar && bloodPerTick < testAltar.OrbChargeSpeed)
-                                continue; // discard config that risks starvation
-
-
-                            if (orbRate > bestRate)
-                            {
-                                bestRate = orbRate;
-                                bestAltar = testAltar.Copy();
-                            }
-                        }
-                    }
+                if (orbRate > bestRate)
+                {
+                    bestRate = orbRate;
+                    bestAltar = testAltar.Copy();
                 }
             }
 
             return bestAltar;
         }
 
-        private void ApplyNetworkCapacityRunes(Altar baseAltar, IBloodOrb orb, int targetCapacity)
+        private void GenerateCombinations(int slotsLeft, int runeIndex, int runeTypes, int[] current, List<int[]> results)
         {
-            BaseRune? networkCapacityRune = null;
-
-            foreach (var rune in m_runes)
+            if (runeIndex == runeTypes - 1)
             {
-                var context = new AltarContext();
-                var targetmodifier = context.SoulNetworkMultiplier;
-                rune.ApplyRune(context, 1);
-                if (context.SoulNetworkMultiplier > targetmodifier)
-                {
-                    networkCapacityRune = rune;
-                    break;
-                }
+                current[runeIndex] = slotsLeft;
+                results.Add((int[])current.Clone());
+                return;
             }
 
-            if (networkCapacityRune == null)
-                return;
+            for (int i = 0; i <= slotsLeft; i++)
+            {
+                current[runeIndex] = i;
+                GenerateCombinations(slotsLeft - i, runeIndex + 1, runeTypes, current, results);
+            }
+        }
 
+        private static void ApplyNetworkCapacityRunes(Altar baseAltar, IBloodOrb orb, int targetCapacity)
+        {
+            var networkCapacityRune = new Runes.Orb();
             var testContext = new AltarContext();
             var targetAmount = 0;
+
             for (int i = 0; i <= baseAltar.MaxRuneSlots - baseAltar.TotalRunesUsed; i++)
             {
                 networkCapacityRune.ApplyRune(testContext, 1);
