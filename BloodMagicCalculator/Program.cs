@@ -1,5 +1,6 @@
 ﻿using BloodMagicCalculator.Calc;
 using BloodMagicCalculator.Runes;
+using BloodMagicCalculator.Data;
 
 namespace BloodMagicCalculator
 {
@@ -12,7 +13,7 @@ namespace BloodMagicCalculator
 
         static void CalcOptimum()
         {
-            var possibleRunes = new List<BaseRune>()
+            var runesToCheck = new List<BaseRune>()
             {
                 new Runes.AugmentedCapacity(),
                 new Runes.Orb(),
@@ -21,10 +22,10 @@ namespace BloodMagicCalculator
                 new Runes.SuperiorCapacity(),
             };
 
-            var orb = new BloodOrb("Apprentice Blood Orb", 140, 80000000);
+            var orb = Data.Data.GetOrb(OrbType.EldritchBloodOrb);
             var altar = new Altar(6);
 
-            var calculator = new RuneCalculator(possibleRunes);
+            var calculator = new RuneCalculator(runesToCheck);
             var result = calculator.OptimiseOrbChargeRate(altar, orb);
         }
     }
