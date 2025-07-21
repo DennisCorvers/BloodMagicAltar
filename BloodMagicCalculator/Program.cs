@@ -22,11 +22,11 @@ namespace BloodMagicCalculator
                 new Runes.SuperiorCapacity(),
             };
 
-            var orb = Data.Data.GetOrb(OrbType.EldritchBloodOrb);
+            var orb = Data.Data.GetOrb(OrbType.ApprenticeBloodOrb);
             var altar = new Altar(6);
 
             var calculator = new RuneCalculator(runesToCheck);
-            var result = calculator.OptimiseOrbChargeRate(altar, orb);
+            var result = calculator.OptimiseOrbChargeRate(altar, orb, 125000000);
 
             ShowResults(result);
         }

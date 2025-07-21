@@ -11,10 +11,20 @@ namespace BloodMagicCalculator.Calc
             m_runes = targetRunes;
         }
 
-        public Altar OptimiseOrbChargeRate(Altar baseAltar, IBloodOrb orb)
+        public Altar OptimiseOrbChargeRate(Altar baseAltar, IBloodOrb orb, int networkCapacity = 0)
         {
+            if (networkCapacity > orb.Capacity)
+            {
+                baseAltar = baseAltar.Copy();
+                baseAltar.AddOrb(orb);
+                ApplyNetworkCapacityRunes(baseAltar, orb, networkCapacity);
+            }
+
             int maxRunes = baseAltar.MaxRuneSlots - baseAltar.TotalRunesUsed;
             int runeCount = m_runes.Count;
+
+            if (maxRunes == 0)
+                return baseAltar;
 
             // Initialize all slots with the best single rune (based on estimate)
             int bestRuneIndex = 0;
@@ -99,7 +109,7 @@ namespace BloodMagicCalculator.Calc
         }
 
         // Same estimate function as before (or improved for speed)
-        private double EstimateRuneEfficiency(BaseRune rune, Altar altar, IBloodOrb orb)
+        private static double EstimateRuneEfficiency(BaseRune rune, Altar altar, IBloodOrb orb)
         {
             var testAltar = altar.Copy();
             testAltar.AddRune(rune, 1);
@@ -114,6 +124,39 @@ namespace BloodMagicCalculator.Calc
             double baseRate = Math.Min(baseBloodPerTick, altar.OrbChargeSpeed);
 
             return Math.Max(0, rate - baseRate);
+        }
+
+        private void ApplyNetworkCapacityRunes(Altar baseAltar, IBloodOrb orb, int targetCapacity)
+        {
+            BaseRune? networkCapacityRune = null;
+
+            foreach (var rune in m_runes)
+            {
+                var context = new AltarContext();
+                var targetmodifier = context.SoulNetworkMultiplier;
+                rune.ApplyRune(context, 1);
+                if (context.SoulNetworkMultiplier > targetmodifier)
+                {
+                    networkCapacityRune = rune;
+                    break;
+                }
+            }
+
+            if (networkCapacityRune == null)
+                return;
+
+            var testContext = new AltarContext();
+            var targetAmount = 0;
+            for (int i = 0; i <= baseAltar.MaxRuneSlots - baseAltar.TotalRunesUsed; i++)
+            {
+                networkCapacityRune.ApplyRune(testContext, 1);
+                targetAmount = i + 1;
+                if (testContext.SoulNetworkMultiplier * orb.Capacity >= targetCapacity)
+                    break;
+
+            }
+
+            baseAltar.AddRune(networkCapacityRune, targetAmount);
         }
     }
 }
