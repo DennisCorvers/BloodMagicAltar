@@ -80,6 +80,8 @@ namespace BloodMagicCalculator
 
             Console.WriteLine($"{"Altar Acceleration",-20}: {result.AltarAcceleration}");
             Console.WriteLine($"{"Ritual Acceleration",-20}: {result.RitualAcceleration}");
+
+            Console.ReadLine();
         }
     }
 }
