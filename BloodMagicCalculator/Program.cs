@@ -22,7 +22,7 @@ namespace BloodMagicCalculator
                 new Runes.SuperiorCapacity(),
             };
 
-            var orb = Data.Data.GetOrb(OrbType.ApprenticeBloodOrb);
+            var orb = Data.Data.GetOrb(OrbType.EldritchBloodOrb);
             var altar = new Altar(6);
 
             var calculator = new RuneCalculator(runesToCheck);
